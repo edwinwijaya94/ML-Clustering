@@ -34,5 +34,21 @@ public class Main {
         MyKMeans K = new MyKMeans();
         K.cluster(trainingData, 3);
         K.printCluster();
+
+
+        System.out.println();
+        ArrayList<Point> trainingPointData = new ArrayList<>();
+        reader = new CSVReader(new FileReader("dataset/point.csv"));
+        while ((nextLine = reader.readNext()) != null) {
+            ArrayList<Float> instance = new ArrayList<>();
+            for (String aNextLine : nextLine) {
+                instance.add(Float.parseFloat(aNextLine));
+            }
+            trainingPointData.add(new Point(instance));
+        }
+
+        MyAgnes A = new MyAgnes();
+        A.buildClassifier(trainingPointData);
+        A.printCluster();
     }
 }
