@@ -1,9 +1,11 @@
 
 import com.opencsv.CSVReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -17,11 +19,10 @@ import java.util.List;
  */
 public class Main {
     
-    public static void main(String[] args) throws IOException{
-        
+    public static void KMeansHandler(String csvFile, int numCluster) throws FileNotFoundException, IOException{
         //convert to float
         ArrayList<ArrayList<Float>> trainingData = new ArrayList<>();
-        CSVReader reader = new CSVReader(new FileReader("dataset/point.csv"));
+        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
         String [] nextLine;
         while ((nextLine = reader.readNext()) != null) {
            ArrayList<Float> instance = new ArrayList<>();
@@ -32,13 +33,15 @@ public class Main {
         }
         
         MyKMeans K = new MyKMeans();
-        K.cluster(trainingData, 3);
+        K.cluster(trainingData, numCluster);
         K.printCluster();
-
-
+    }
+    
+    public static void AggSingleHandler(String csvFile) throws FileNotFoundException, IOException{
         System.out.println();
         ArrayList<Point> trainingPointData = new ArrayList<>();
-        reader = new CSVReader(new FileReader("dataset/point.csv"));
+        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
+        String[] nextLine;
         while ((nextLine = reader.readNext()) != null) {
             ArrayList<Float> instance = new ArrayList<>();
             for (String aNextLine : nextLine) {
@@ -50,5 +53,27 @@ public class Main {
         MyAgnes A = new MyAgnes();
         A.buildClassifier(trainingPointData);
         A.printCluster();
+    }
+    
+    public static void main(String[] args) throws IOException{
+        
+        Scanner sc = new Scanner(System.in);
+        while(true){
+            System.out.println("Input command : <algorithm> <csv file> <optional params>");
+            String input = sc.nextLine();
+            if(input.startsWith("kmeans")){
+                String[] command = input.split(" ");
+                KMeansHandler(command[1], Integer.parseInt(command[2]));
+            }
+            else if(input.startsWith("aggsingle")){
+                String[] command = input.split(" ");
+                AggSingleHandler(command[1]);
+            }
+            else if(input.startsWith("aggcomplete")){
+                String[] command = input.split(" ");
+                
+            }
+        }
+        
     }
 }
