@@ -111,7 +111,9 @@ public class MyKMeans {
 
             //calculate new centroid
             for(int j=0; j<centroids.size(); j++){
-                centroids.set(j, getCentroid(clusters.get(j)));
+                if(clusters.get(j).size() > 0){ // check for empty cluster
+                    centroids.set(j, getCentroid(clusters.get(j)));
+                }
             }
         }
     }
