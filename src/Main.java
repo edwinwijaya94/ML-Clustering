@@ -19,7 +19,7 @@ import java.util.Scanner;
  */
 public class Main {
     
-    public static void KMeansHandler(String csvFile, int numCluster) throws FileNotFoundException, IOException{
+    public static void KMeansHandler(String csvFile, int numCluster, boolean excludeClass) throws FileNotFoundException, IOException{
         //convert to float
         ArrayList<ArrayList<Float>> trainingData = new ArrayList<>();
         CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
@@ -27,7 +27,9 @@ public class Main {
         while ((nextLine = reader.readNext()) != null) {
            ArrayList<Float> instance = new ArrayList<>();
            for(int i=0; i<nextLine.length; i++){
-               instance.add(Float.parseFloat(nextLine[i]));
+                if(!excludeClass || (excludeClass && i<nextLine.length-1)){ //assume class located in last attr
+                    instance.add(Float.parseFloat(nextLine[i]));
+                }
            }
            trainingData.add(instance);
         }
@@ -63,7 +65,8 @@ public class Main {
             String input = sc.nextLine();
             if(input.startsWith("kmeans")){
                 String[] command = input.split(" ");
-                KMeansHandler(command[1], Integer.parseInt(command[2]));
+                //<kmeans> <csv file> <number of cluster> <is exclude class>
+                KMeansHandler(command[1], Integer.parseInt(command[2]), Boolean.parseBoolean(command[3]));
             }
             else if(input.startsWith("aggsingle")){
                 String[] command = input.split(" ");

@@ -37,6 +37,7 @@ public class MyKMeans {
     
     ArrayList<ArrayList<Float>> centroids;
     ArrayList<ArrayList<ArrayList<Float>>> clusters;
+    int iterations;
     
     public float euclideanDist(ArrayList<Float> vec1, ArrayList<Float> vec2){
         float res = 0;
@@ -67,6 +68,7 @@ public class MyKMeans {
     
     public void cluster(ArrayList<ArrayList<Float>> trainingData, int numCluster){
         
+        this.iterations = 0;
         centroids = new ArrayList<>();
         //set initial centroids
         int diff = trainingData.size()/numCluster;
@@ -107,6 +109,7 @@ public class MyKMeans {
                 break;
             } else {
                 prevClusters = (ArrayList<ArrayList<ArrayList<Float>>>) clusters.clone();
+                this.iterations++;
             }
 
             //calculate new centroid
@@ -126,6 +129,7 @@ public class MyKMeans {
     }
     
     public void printCluster(){
+        System.out.println("Iterations: " + this.iterations);
         for(int i=0; i<clusters.size(); i++){
             System.out.printf("cluster-%d (%d):",i+1,clusters.get(i).size());
             for(int j=0; j<clusters.get(i).size(); j++){
