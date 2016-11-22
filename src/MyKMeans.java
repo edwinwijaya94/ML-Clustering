@@ -72,7 +72,7 @@ public class MyKMeans {
         centroids = new ArrayList<>();
         //set initial centroids
         int diff = trainingData.size()/numCluster;
-        for(int i=0; i<numCluster; i+=diff){
+        for(int i=0, j=0; j<numCluster; i+=diff,j++){
             centroids.add(trainingData.get(i));
         }
 //        centroids.add(trainingData.get(0));
