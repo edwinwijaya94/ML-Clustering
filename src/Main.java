@@ -53,6 +53,26 @@ public class Main {
         }
 
         MyAgnes A = new MyAgnes();
+        A.setLinkage("single");
+        A.buildClassifier(trainingPointData);
+        A.printCluster();
+    }
+    
+    public static void AggCompleteHandler(String csvFile) throws FileNotFoundException, IOException{
+        System.out.println();
+        ArrayList<Point> trainingPointData = new ArrayList<>();
+        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
+        String[] nextLine;
+        while ((nextLine = reader.readNext()) != null) {
+            ArrayList<Float> instance = new ArrayList<>();
+            for (String aNextLine : nextLine) {
+                instance.add(Float.parseFloat(aNextLine));
+            }
+            trainingPointData.add(new Point(instance));
+        }
+
+        MyAgnes A = new MyAgnes();
+        A.setLinkage("complete");
         A.buildClassifier(trainingPointData);
         A.printCluster();
     }
@@ -74,7 +94,7 @@ public class Main {
             }
             else if(input.startsWith("aggcomplete")){
                 String[] command = input.split(" ");
-                
+                AggCompleteHandler(command[1]);
             }
         }
         

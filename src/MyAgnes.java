@@ -83,6 +83,32 @@ class ProximityMatrix {
 
         return this;
     }
+    
+    ProximityMatrix calculateCompleteLinkage(){
+        for (int i=0;i<clusters.size();i++) {
+            for (int j=i;j<clusters.size();j++){
+                if (i == j) {
+                    proximityMatrix[i][j] = Float.valueOf(0);
+                    proximityMatrix[j][i] = Float.valueOf(0);
+                } else {
+                    ArrayList<Point> clusterA = clusters.get(i);
+                    ArrayList<Point> clusterB = clusters.get(j);
+                    Float maximumDistanceBetweenClusterAB = Float.MIN_VALUE;
+
+                    for (Point pointA: clusterA) {
+                        for (Point pointB: clusterB) {
+                            maximumDistanceBetweenClusterAB = Math.max(maximumDistanceBetweenClusterAB, getEuclideanDistance(pointA, pointB));
+                        }
+                    }
+
+                    proximityMatrix[i][j] = maximumDistanceBetweenClusterAB;
+                    proximityMatrix[j][i] = maximumDistanceBetweenClusterAB;
+                }
+            }
+        }
+
+        return this;
+    }
 
     int[] getNearestCluster(){
         Float minimumDistanceBetweenClusterAB = Float.MAX_VALUE;
@@ -119,6 +145,11 @@ class ProximityMatrix {
 
 public class MyAgnes {
     private ArrayList<ArrayList<ArrayList<Point>>> allLevelClusters = new ArrayList<>();
+    private String linkage;
+    
+    void setLinkage(String newLinkage) {
+        linkage = newLinkage;
+    }
 
     void buildClassifier(ArrayList<Point> data){
         ArrayList<ArrayList<Point>> clusters = new ArrayList<>();
@@ -136,7 +167,12 @@ public class MyAgnes {
         // Start clustering until number of clusters = 1
         for (;clusters.size() != 1;) {
             ProximityMatrix proximityMatrix = new ProximityMatrix(clusters);
-            proximityMatrix.calculateSingleLinkage();
+            
+            if (linkage.equalsIgnoreCase("single")) {
+                proximityMatrix.calculateSingleLinkage();
+            } else if (linkage.equalsIgnoreCase("complete")) {
+                proximityMatrix.calculateCompleteLinkage();
+            }
 
             proximityMatrix.printProximityMatrix();
 
