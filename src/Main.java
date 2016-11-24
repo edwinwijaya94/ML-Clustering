@@ -1,11 +1,14 @@
 
-import com.opencsv.CSVReader;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.CSVLoader;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -19,69 +22,75 @@ import java.util.Scanner;
  */
 public class Main {
     
-    public static void KMeansHandler(String csvFile, int numCluster, boolean excludeClass) throws FileNotFoundException, IOException{
-        //convert to float
-        ArrayList<ArrayList<Float>> trainingData = new ArrayList<>();
-        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
-        String [] nextLine;
-        while ((nextLine = reader.readNext()) != null) {
-           ArrayList<Float> instance = new ArrayList<>();
-           for(int i=0; i<nextLine.length; i++){
-                if(!excludeClass || (excludeClass && i<nextLine.length-1)){ //assume class located in last attr
-                    instance.add(Float.parseFloat(nextLine[i]));
-                }
-           }
-           trainingData.add(instance);
+    private static Instances loadData(String path) throws Exception {
+        Instances data = null;
+        if (path.endsWith(".arff")) {
+            DataSource source = new DataSource("dataset/"+path);
+            data = source.getDataSet();
+        } else if (path.endsWith(".csv")) {
+            CSVLoader loader = new CSVLoader();
+            loader.setSource(new File("dataset/"+path));
+            
+            //if there is no header row in csv file
+            String[] options = new String[1];
+            options[0] = "-H";
+            loader.setOptions(options);
+            
+            data = loader.getDataSet();
+            
+            //save ARFF
+            String arffFileName = "dataset/"+path.substring(0, path.indexOf('.')).concat(".arff");
+            File file = new File(arffFileName);
+            if (!file.exists()) {
+                ArffSaver saver = new ArffSaver();
+                saver.setInstances(data);
+                saver.setFile(file);
+                saver.writeBatch();
+            }
+            
+            DataSource source = new DataSource(arffFileName);
+            data = source.getDataSet();
         }
-        
+        return data;
+  }
+    
+    public static void KMeansHandler(String file, int numCluster, boolean excludeClass) throws FileNotFoundException, IOException, Exception{
         MyKMeans K = new MyKMeans();
-        K.cluster(trainingData, numCluster);
-        K.printCluster();
+        K.setNumCluster(numCluster);
+        Instances instances = loadData(file);
+        if (excludeClass) {
+            Remove remove = new Remove();
+            remove.setAttributeIndices("last");
+            remove.setInputFormat(instances);
+            Instances newInstances = Filter.useFilter(instances, remove);
+            System.out.println(newInstances);
+            K.buildClusterer(newInstances);
+            K.printCluster();
+        } else {
+            K.buildClusterer(instances);
+            K.printCluster();
+        }
     }
     
-    public static void AggSingleHandler(String csvFile) throws FileNotFoundException, IOException{
-        System.out.println();
-        ArrayList<Point> trainingPointData = new ArrayList<>();
-        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
-        String[] nextLine;
-        while ((nextLine = reader.readNext()) != null) {
-            ArrayList<Float> instance = new ArrayList<>();
-            for (String aNextLine : nextLine) {
-                instance.add(Float.parseFloat(aNextLine));
-            }
-            trainingPointData.add(new Point(instance));
-        }
-
+    public static void AggSingleHandler(String file) throws FileNotFoundException, IOException, Exception{
         MyAgnes A = new MyAgnes();
         A.setLinkage("single");
-        A.buildClassifier(trainingPointData);
+        A.buildClusterer(loadData(file));
         A.printCluster();
     }
     
-    public static void AggCompleteHandler(String csvFile) throws FileNotFoundException, IOException{
-        System.out.println();
-        ArrayList<Point> trainingPointData = new ArrayList<>();
-        CSVReader reader = new CSVReader(new FileReader("dataset/"+csvFile));
-        String[] nextLine;
-        while ((nextLine = reader.readNext()) != null) {
-            ArrayList<Float> instance = new ArrayList<>();
-            for (String aNextLine : nextLine) {
-                instance.add(Float.parseFloat(aNextLine));
-            }
-            trainingPointData.add(new Point(instance));
-        }
-
+    public static void AggCompleteHandler(String file) throws FileNotFoundException, IOException, Exception{
         MyAgnes A = new MyAgnes();
         A.setLinkage("complete");
-        A.buildClassifier(trainingPointData);
+        A.buildClusterer(loadData(file));
         A.printCluster();
     }
     
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException, Exception{
         
         Scanner sc = new Scanner(System.in);
         while(true){
-            System.out.println("Input command : <algorithm> <csv file> <optional params>");
+            System.out.println("Input command : <algorithm> <filename> <optional params>");
             String input = sc.nextLine();
             if(input.startsWith("kmeans")){
                 String[] command = input.split(" ");
