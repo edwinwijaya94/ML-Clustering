@@ -4,4 +4,5 @@ build.xml
 manifest.mf
 *.class
 .idea/*
-.DS_STORElib/weka.jar
+.DS_STORE
+lib/weka.jar
